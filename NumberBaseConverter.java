@@ -1,9 +1,13 @@
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.Scanner;
 
 import static java.lang.Integer.parseInt;
 
 public class NumberBaseConverter {
+
+    public static final int DEFAULT_SCALE = 5;
 
     private int sourceBase;
     private int targetBase;
@@ -41,49 +45,61 @@ public class NumberBaseConverter {
         System.out.println(query);
         String s;
         while (!(s = scanner.next()).equals("/back")) {
-            System.out.println("conversion result: " + convert(s) + "\n");
+            System.out.println("Conversion result: " + convert(s) + "\n");
             System.out.println(query);
         }
     }
 
     private String convert(String n) {
-        BigInteger temp = convertToDecimal(n, sourceBase);
+        BigDecimal temp = convertToDecimal(n, sourceBase);
         return convertFromDecimal(temp, targetBase);
     }
 
-    public static BigInteger convertToDecimal(String source, int sourceBase) {
-        BigInteger ans = BigInteger.ZERO;
-        BigInteger amp = BigInteger.ONE;
-        for (int i = source.length(); i --> 0;) {
+    public static BigDecimal convertToDecimal(String source, int sourceBase) {
+        BigDecimal ans = BigDecimal.ZERO;
+        BigDecimal amp = BigDecimal.ONE;
+        BigDecimal base = new BigDecimal(String.valueOf(sourceBase));
+        String[] split = source.split("\\.");
+        String integer = split[0]; //integer portion
+        for (int i = integer.length(); i --> 0;) {
             ans = ans.add(
-                    new BigInteger(String.valueOf(getLiteralValue(source.charAt(i))))
+                    new BigDecimal(String.valueOf(getLiteralValue(integer.charAt(i))))
                             .multiply(amp)
             );
-            amp = amp.multiply(
-                    new BigInteger(String.valueOf(sourceBase))
-            );
+            amp = amp.multiply(base);
         }
-
+        if (split.length == 1) return ans; //no fraction portion
+        String fraction = split[1]; // fraction portion
+        amp = BigDecimal.ONE;
+        for (int i = 1; i <= fraction.length(); i++) {
+            int val = getLiteralValue(fraction.charAt(i-1));
+            amp = amp.divide(base, DEFAULT_SCALE * 4, RoundingMode.HALF_DOWN);
+            ans = ans.add(amp.multiply(new BigDecimal(String.valueOf(val))));
+        }
         return ans;
     }
 
-    private static String convertFromDecimal(BigInteger dec, int targetBase) {
+    private static String convertFromDecimal(BigDecimal dec, int targetBase) {
+        BigInteger base = BigInteger.valueOf(targetBase);
+        BigInteger integer = dec.multiply(BigDecimal.valueOf(targetBase).pow(DEFAULT_SCALE)).toBigInteger();
         StringBuilder result = new StringBuilder();
-        while (!dec.equals(BigInteger.ZERO)) {
-            BigInteger[] quotientAndRemainder = dec.divideAndRemainder(BigInteger.valueOf(targetBase));
+        while (!integer.equals(BigInteger.ZERO)) {
+            BigInteger[] quotientAndRemainder = integer.divideAndRemainder(base);
             result.insert(0, getLiteral(quotientAndRemainder[1].intValue()));
-            dec = quotientAndRemainder[0];
+            integer = quotientAndRemainder[0];
         }
-        return result.toString();
+        result.insert(result.length() - DEFAULT_SCALE, '.');
+        if (!dec.toString().contains(".")) return result.substring(0, result.length() - DEFAULT_SCALE - 1);
+        else return result.toString();
     }
 
     private static int getLiteralValue (char c) {
-        if ('0' <= c && c <= '9') {
+        if ('0' <= c && c <= '9') { //actual digits
             return c - 48;
-        } else if ('A' <= c && c <= 'Z') {
+        } else if ('A' <= c && c <= 'Z') { //capital letters
             return c - 65 + 10;
         } else {
-            return c - 97 +10;
+            return c - 97 +10; //small letters
         }
     }
 
