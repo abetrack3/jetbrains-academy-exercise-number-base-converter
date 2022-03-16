@@ -1,52 +1,78 @@
+import java.math.BigInteger;
 import java.util.Scanner;
+
+import static java.lang.Integer.parseInt;
 
 public class NumberBaseConverter {
 
+    private int sourceBase;
+    private int targetBase;
+    private Scanner scanner;
+
     public static void main(String... args) {
+        NumberBaseConverter instance = new NumberBaseConverter();
+        instance.run();
+    }
+
+    void run() {
         // write your code here
 
-        Scanner sc = new Scanner(System.in);
+        scanner = new Scanner(System.in);
+        String query = "Enter two numbers in format: {source base} {target base} (To quit type /exit) ";
+        System.out.println(query);
+        String s;
 
-        System.out.println("Do you want to convert /from decimal or /to decimal? (To quit type /exit) ");
-        String mode;
-        while (!(mode = sc.next()).equals("/exit")) {
-            switch (mode) {
-                case "/from" : {
-                    System.out.println("Enter a number in decimal system: ");
-                    int decimal = Integer.parseInt(sc.next());
-                    System.out.println("Enter the target base: ");
-                    int base = Integer.parseInt(sc.next());
-                    System.out.println("Conversion result: " + convertFromDecimal(decimal, base) + "\n");
-                    break;
-                }
-                case "/to" : {
-                    System.out.println("Enter source number: ");
-                    String source = sc.next();
-                    System.out.println("Enter source base: ");
-                    int base = Integer.parseInt(sc.next());
-                    System.out.println("Conversion to decimal result: " + convertToDecimal(source, base) + "\n");
-                    break;
-                }
-            }
-            System.out.println("Do you want to convert /from decimal or /to decimal? (To quit type /exit) ");
+        while (!(s = scanner.next()).equals("/exit")) {
+            sourceBase = parseInt(s);
+            targetBase = parseInt(scanner.next());
+            baseConverter();
+            System.out.println(query);
+        }
+
+        scanner.close();
+    }
+
+    private void baseConverter() {
+        String query = String.format(
+                "Enter number in base %d to convert to base %d (To go back type /back) ",
+                sourceBase,
+                targetBase
+        );
+        System.out.println(query);
+        String s;
+        while (!(s = scanner.next()).equals("/back")) {
+            System.out.println("conversion result: " + convert(s) + "\n");
+            System.out.println(query);
         }
     }
 
-    public static int convertToDecimal(String source, int sourceBase) {
-        int ans = 0;
-        int amp = 1;
+    private String convert(String n) {
+        BigInteger temp = convertToDecimal(n, sourceBase);
+        return convertFromDecimal(temp, targetBase);
+    }
+
+    public static BigInteger convertToDecimal(String source, int sourceBase) {
+        BigInteger ans = BigInteger.ZERO;
+        BigInteger amp = BigInteger.ONE;
         for (int i = source.length(); i --> 0;) {
-            ans += getLiteralValue(source.charAt(i)) * amp;
-            amp *= sourceBase;
+            ans = ans.add(
+                    new BigInteger(String.valueOf(getLiteralValue(source.charAt(i))))
+                            .multiply(amp)
+            );
+            amp = amp.multiply(
+                    new BigInteger(String.valueOf(sourceBase))
+            );
         }
+
         return ans;
     }
 
-    private static String convertFromDecimal(int dec, int targetBase) {
+    private static String convertFromDecimal(BigInteger dec, int targetBase) {
         StringBuilder result = new StringBuilder();
-        while (dec != 0) {
-            result.insert(0, getLiteral(dec % targetBase));
-            dec /= targetBase;
+        while (!dec.equals(BigInteger.ZERO)) {
+            BigInteger[] quotientAndRemainder = dec.divideAndRemainder(BigInteger.valueOf(targetBase));
+            result.insert(0, getLiteral(quotientAndRemainder[1].intValue()));
+            dec = quotientAndRemainder[0];
         }
         return result.toString();
     }
