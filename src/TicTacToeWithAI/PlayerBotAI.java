@@ -3,7 +3,7 @@ package TicTacToeWithAI;
 public final class PlayerBotAI extends Player {
 
     private enum Difficulty {
-        EASY, MEDIUM, HARD;
+        EASY, MEDIUM, HARD
     }
 
     private final Difficulty level;
@@ -22,6 +22,9 @@ public final class PlayerBotAI extends Player {
             }
             case MEDIUM -> {
                 return makeMediumMove(board);
+            }
+            case HARD -> {
+                return makeHardMove(board);
             }
         }
         return null;
@@ -151,4 +154,9 @@ public final class PlayerBotAI extends Player {
         }
         return null;
     }
+
+    private int[] makeHardMove(GameBoard board) {
+        return MiniMax.getResult(board, this.PLAYER_SYMBOL);
+    }
+
 }
