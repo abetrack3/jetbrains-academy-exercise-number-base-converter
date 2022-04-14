@@ -2,12 +2,17 @@ package TicTacToeWithAI;
 
 public final class Game {
 
+    private static final char SYMBOL_PLAYER1 = 'X';
+    private static final char SYMBOL_PLAYER2 = 'O';
+
     private Game() {}
 
     static void run() {
         System.out.println("Input command: ");
         for (String s = Input.nextLine(); !s.equals("exit") ; s = Input.nextLine()) {
             String[] commands = s.split(" ");
+
+            // replace with regex matching
             if (commands.length != 3) {
                 System.out.println("Bad parameters!");
             } else {
@@ -21,8 +26,8 @@ public final class Game {
     private static void runInstance(String user1, String user2) {
         GameBoard board = new GameBoard();
         System.out.println(board);
-        Player player1 = user1.equals("user") ? new PlayerHuman('X') : new PlayerBotAI("Easy", 'X');
-        Player player2 = user2.equals("easy") ? new PlayerBotAI("Easy", 'O') : new PlayerHuman('O');
+        Player player1 = createPlayer(SYMBOL_PLAYER1, user1);
+        Player player2 = createPlayer(SYMBOL_PLAYER2, user2);
         Player currentPlayer = player1;
         for (int i = 0; i < 9; i++) {
             int[] coordinates = currentPlayer.makeMove(board);
@@ -36,6 +41,14 @@ public final class Game {
                 System.out.println(status);
                 return;
             }
+        }
+    }
+
+    private static Player createPlayer(char symbol, String playerType) {
+        if (playerType.equals("user")) {
+            return new PlayerHuman(symbol);
+        } else {
+            return new PlayerBotAI(symbol, playerType);
         }
     }
 
