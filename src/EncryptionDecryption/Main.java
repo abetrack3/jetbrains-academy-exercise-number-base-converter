@@ -1,23 +1,30 @@
 package EncryptionDecryption;
 
+import java.util.Scanner;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Main {
 
     public static void main(String[] args) {
-        String message = "we found a treasure!";
-        System.out.println(ciphertext(message));
+        Scanner scanner = new Scanner(System.in);
+        String message = scanner.nextLine();
+        int key = Integer.parseInt(scanner.nextLine());
+        System.out.println(ciphertext(message, key));
     }
 
-    public static String ciphertext(String text) {
-        return Stream.of(text.split(""))
-                .map(x -> {
-                    if (x.matches("[A-Z]")) return (char) (90 - x.charAt(0) + 65);
-                    else if (x.matches("[a-z]")) return (char) (122 - x.charAt(0) + 97);
-                    else return x.charAt(0);
-                })
-                .map(String::valueOf)
+    public static String ciphertext(String text, int key) {
+        return text
+                .chars()
+                .map(e -> encryptChar(e, key))
+                .mapToObj(e -> String.valueOf((char) e))
                 .collect(Collectors.joining());
     }
+
+    public static char encryptChar(int character, int key) {
+        String x = String.valueOf((char) character);
+        if (x.matches("[A-Z]")) return (char) (65 + (key + x.charAt(0) - 65) % 26);
+        else if (x.matches("[a-z]")) return (char) (97 + (key + x.charAt(0) - 97) % 26);
+        else return x.charAt(0);
+    }
+
 }
