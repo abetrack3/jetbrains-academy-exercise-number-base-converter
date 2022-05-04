@@ -7,24 +7,22 @@ public class Main {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        String mode = scanner.nextLine();
         String message = scanner.nextLine();
         int key = Integer.parseInt(scanner.nextLine());
-        System.out.println(ciphertext(message, key));
+        System.out.println(cipherTextEncrypt(message, key, mode.equals("dec")));
     }
 
-    public static String ciphertext(String text, int key) {
+    public static String cipherTextEncrypt(String text, int key, boolean decrypt) {
         return text
                 .chars()
-                .map(e -> encryptChar(e, key))
+                .map(e -> encryptChar(e, decrypt ? -key : key))
                 .mapToObj(e -> String.valueOf((char) e))
                 .collect(Collectors.joining());
     }
 
     public static char encryptChar(int character, int key) {
-        String x = String.valueOf((char) character);
-        if (x.matches("[A-Z]")) return (char) (65 + (key + x.charAt(0) - 65) % 26);
-        else if (x.matches("[a-z]")) return (char) (97 + (key + x.charAt(0) - 97) % 26);
-        else return x.charAt(0);
+        return (char) (key + character);
     }
 
 }
