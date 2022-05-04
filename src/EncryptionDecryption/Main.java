@@ -5,7 +5,6 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class Main {
 
@@ -15,8 +14,11 @@ public class Main {
         int key = Integer.parseInt(argumentMap.get("key"));
         boolean encrypt = argumentMap.get("mode").equals("enc");
         setOut(argumentMap);
-        String encryptDecrypt = cipherTextEncrypt(data, key, encrypt);
+
+        CryptographyAlgorithm algorithm = AlgorithmFactory.getAlgorithm(argumentMap.get("alg"));
+        String encryptDecrypt = encrypt ? algorithm.encryptText(data, key) : algorithm.decryptText(data, key);
         System.out.println(encryptDecrypt);
+        System.out.flush();
     }
 
     public static void setOut(Map<String, String> argumentMap) {
@@ -41,6 +43,7 @@ public class Main {
         Map<String, String> argumentMap = new HashMap<>() {{
             put("mode", "enc");
             put("key", "0");
+            put("alg", "shift");
             put("data", null);
             put("in", null);
             put("out", null);
@@ -49,18 +52,6 @@ public class Main {
             argumentMap.put(args[i].replace("-", ""), args[i + 1]);
         }
         return argumentMap;
-    }
-
-    public static String cipherTextEncrypt(String text, int key, boolean encrypt) {
-        return text
-                .chars()
-                .map(e -> encryptChar(e, encrypt ? key : -key))
-                .mapToObj(Character::toString)
-                .collect(Collectors.joining());
-    }
-
-    public static char encryptChar(int character, int key) {
-        return (char) (key + character);
     }
 
 }
